@@ -46,6 +46,7 @@ end)
 local self = {}
 self.seconds = 0
 self.tsunami = false
+self.lastWeather = ''
 local NUI_status = false
 local PauseSync = {}
 PauseSync.state = false
@@ -70,11 +71,19 @@ AddEventHandler('cd_easytime:ForceUpdate', function(data)
     if not PauseSync.state then
         self.freeze = data.freeze
         if data.weather ~= nil then
+            self.lastWeather = data.weather
             CheckSnowSync(data.weather)
             self.weather = data.weather
             self.blackout = data.blackout
             ChangeWeather(self.weather, data.instantweather)
             ChangeBlackout(self.blackout)
+            if self.weather == 'RAIN' then
+                SetRainLevel(0.3)
+            elseif self.weather == 'THUNDER' then
+                SetRainLevel(0.5)
+            else
+                SetRainLevel(0.0)
+            end
         end
         if data.hours ~= nil then
             local newhours = GetClockHours()
@@ -246,7 +255,7 @@ AddEventHandler('cd_easytime:ToggleNUIFocus', function()
     SetNuiFocusKeepInput(false)
     SetPlayerCanDoDriveBy(PlayerId(), true)
     local count, keys = 0, {177, 200, 202, 322}
-    while count < 100 do 
+    while count < 100 do
         Wait(0)
         count=count+1
         for c, d in pairs(keys) do
